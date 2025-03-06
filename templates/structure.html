@@ -1,0 +1,106 @@
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+	<meta charset="UTF-8">
+	<title>CMR University Chatbot</title>
+	<style>
+		body {
+		font-family: Arial, sans-serif;
+		margin: 20px;
+		background-color: #f4f4f4;
+		}
+		.chat-container {
+		max-width: 800px;
+		margin: auto;
+		background: #fff;
+		padding: 20px;
+		border-radius: 8px;
+		box-shadow: 0 0 10px rgba(0,0,0,0.1);
+		}
+		.chatbot-response {
+		font-family: Arial, sans-serif;
+		line-height: 1.6;
+		margin-top: 20px;
+		}
+		.response-heading {
+		color: #2c3e50;
+		margin-bottom: 10px;
+		}
+		.response-subheading {
+		color: #34495e;
+		margin-bottom: 10px;
+		}
+		.ordered-list {
+		margin-left: 20px;
+		padding-left: 20px;
+		}
+		.bullet-list {
+		margin-left: 40px;
+		padding-left: 20px;
+		}
+		.list-item {
+		margin-bottom: 5px;
+		}
+		.section-divider {
+		margin: 20px 0;
+		border: 0;
+		border-top: 1px solid #ccc;
+		}
+		.response-paragraph {
+		margin-bottom: 10px;
+		}
+		.query-form {
+		display: flex;
+		flex-direction: column;
+		}
+		.query-form input[type="text"] {
+		padding: 10px;
+		margin-bottom: 10px;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		}
+		.query-form button {
+		padding: 10px;
+		background-color: #2c3e50;
+		color: #fff;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		}
+		.query-form button:hover {
+		background-color: #34495e;
+		}
+	</style>
+	</head>
+	<body>
+	<div class="chat-container">
+		<h1>CMR University Chatbot</h1>
+		<form id="chatForm" class="query-form">
+		<input type="text" id="userQuery" placeholder="Enter your question here" required>
+		<button type="submit">Ask</button>
+		</form>
+		<div id="responseArea"></div>
+	</div>
+
+	<script>
+		document.getElementById("chatForm").addEventListener("submit", async function(e) {
+		e.preventDefault();
+		const query = document.getElementById("userQuery").value;
+		const responseArea = document.getElementById("responseArea");
+		responseArea.innerHTML = "<p>Loading...</p>";
+
+		try {
+			const res = await fetch("/chat", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ query: query })
+			});
+			const data = await res.json();
+			responseArea.innerHTML = data.response;
+		} catch (error) {
+			responseArea.innerHTML = "<p>Error processing your request.</p>";
+		}
+		});
+	</script>
+	</body>
+	</html>

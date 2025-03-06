@@ -1,0 +1,325 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <title>CMR University Chatbot</title>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        * {
+        box-sizing: border-box;
+        }
+        body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+        overflow-x: hidden;
+        }
+        /* Floating Chatbot Button */
+        #chatbot-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 1000;
+        font-size: 28px;
+        line-height: 60px;
+        text-align: center;
+        transition: opacity 0.3s ease;
+        display: none;
+        }
+        /* Chat Sidebar Container */
+        #chat-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 380px;
+        height: 100%;
+        background: linear-gradient(135deg, #ffffff, #f7f9fc);
+        box-shadow: -4px 0 15px rgba(0,0,0,0.15);
+        transform: translateX(0);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        overflow-y: auto;
+        }
+        #chat-sidebar:not(.active) {
+        transform: translateX(105%);
+        }
+        /* Draggable Resize Handle */
+        #resize-handle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 8px;
+        height: 100%;
+        background: rgba(0,0,0,0.1);
+        cursor: ew-resize;
+        z-index: 1001;
+        transition: background 0.2s ease;
+        }
+        #resize-handle:hover {
+        background: rgba(0,0,0,0.2);
+        }
+        /* Chat Container */
+        .chat-container {
+        padding: 25px 20px 20px 20px;
+        position: relative;
+        }
+        .chat-container h1 {
+        font-size: 22px;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        }
+        /* Conversation Area */
+        #conversation {
+        max-height: 60vh;
+        overflow-y: auto;
+        margin-bottom: 20px;
+        padding-right: 5px;
+        }
+        /* Message Styling */
+        .user-message, .bot-message {
+        padding: 12px 15px;
+        border-radius: 20px;
+        margin-bottom: 12px;
+        animation: fadeIn 0.4s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .user-message {
+        background: #dfe6e9;
+        color: #333;
+        text-align: right;
+        margin-left: 30%;
+        }
+        .bot-message {
+        background: #f1f0f0;
+        color: #333;
+        text-align: left;
+        margin-right: 30%;
+        }
+        @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+        }
+        /* Chat Form Styling */
+        .query-form {
+        display: flex;
+        flex-direction: column;
+        }
+        .query-form input[type="text"] {
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        }
+        .query-form button {
+        padding: 12px;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s ease;
+        }
+        .query-form button:hover {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+        }
+        /* Chatbot Response Styling (Markdown Converted) */
+        .chatbot-response {
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.6;
+        margin-top: 10px;
+        color: #2c3e50;
+        }
+        .response-heading {
+        margin-bottom: 10px;
+        font-size: 18px;
+        font-weight: 600;
+        }
+        .response-subheading {
+        margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        }
+        .ordered-list, .bullet-list {
+        margin-left: 20px;
+        padding-left: 20px;
+        }
+        .list-item {
+        margin-bottom: 5px;
+        }
+        .section-divider {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px solid #ccc;
+        }
+        .response-paragraph {
+        margin-bottom: 10px;
+        }
+        /* Close Button for Sidebar */
+        #close-chat {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: #888;
+        cursor: pointer;
+        transition: color 0.2s ease;
+        }
+        #close-chat:hover {
+        color: #333;
+        }
+    </style>
+    </head>
+    <body>
+    <!-- Floating Chatbot Button (hidden by default) -->
+    <button id="chatbot-btn">&#128172;</button>
+
+    <!-- Chat Sidebar Container (visible by default) -->
+    <div id="chat-sidebar" class="active">
+        <!-- Draggable Resize Handle -->
+        <div id="resize-handle"></div>
+        <div class="chat-container">
+        <button id="close-chat">&times;</button>
+        <h1>CMR University Chatbot</h1>
+        <!-- Conversation History Container -->
+        <div id="conversation"></div>
+        <form id="chatForm" class="query-form">
+            <input type="text" id="userQuery" placeholder="Enter your question here" required>
+            <button type="submit">Ask</button>
+        </form>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle elements
+        const chatbotBtn = document.getElementById("chatbot-btn");
+        const chatSidebar = document.getElementById("chat-sidebar");
+        const closeChat = document.getElementById("close-chat");
+        const conversation = document.getElementById("conversation");
+
+        // Conversation history array (loaded from sessionStorage if available)
+        let conversationHistory = [];
+
+        // Load conversation from sessionStorage on page load
+        function loadConversation() {
+        const savedHistory = sessionStorage.getItem("conversationHistory");
+        if (savedHistory) {
+            conversationHistory = JSON.parse(savedHistory);
+            conversationHistory.forEach(msg => {
+            appendMessageToDOM(msg.type, msg.content);
+            });
+        }
+        }
+
+        // Save conversation to sessionStorage
+        function saveConversation() {
+        sessionStorage.setItem("conversationHistory", JSON.stringify(conversationHistory));
+        }
+
+        // Append a message to the conversation area and update sessionStorage
+        function appendMessageToDOM(type, content) {
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add(type === "user" ? "user-message" : "bot-message");
+        msgDiv.innerHTML = content;
+        conversation.appendChild(msgDiv);
+        conversation.scrollTop = conversation.scrollHeight;
+        }
+
+        // Sidebar toggle: When the user closes the sidebar, hide it and show the floating icon
+        closeChat.addEventListener("click", () => {
+        chatSidebar.classList.remove("active");
+        chatbotBtn.style.display = "block";
+        });
+
+        // When the user clicks the floating icon, show the sidebar and hide the icon
+        chatbotBtn.addEventListener("click", () => {
+        chatSidebar.classList.add("active");
+        chatbotBtn.style.display = "none";
+        });
+
+        // Resizable sidebar implementation
+        const resizeHandle = document.getElementById("resize-handle");
+        let isResizing = false;
+
+        resizeHandle.addEventListener("mousedown", () => {
+        isResizing = true;
+        document.body.style.cursor = "ew-resize";
+        });
+
+        document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return;
+        const newWidth = window.innerWidth - e.clientX;
+        if (newWidth >= 250 && newWidth <= 600) {
+            chatSidebar.style.width = newWidth + "px";
+        }
+        });
+
+        document.addEventListener("mouseup", () => {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = "default";
+        }
+        });
+
+        // Load conversation history when the page loads
+        loadConversation();
+
+        // Process chat form submissions
+        document.getElementById("chatForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const queryInput = document.getElementById("userQuery");
+        const query = queryInput.value.trim();
+        if (!query) return;
+        
+        appendMessageToDOM("user", query);
+        conversationHistory.push({ type: "user", content: query });
+        saveConversation();
+        queryInput.value = "";
+        
+        const botPlaceholder = "<p>Loading...</p>";
+        appendMessageToDOM("bot", botPlaceholder);
+        conversationHistory.push({ type: "bot", content: botPlaceholder });
+        saveConversation();
+        
+        const botMsgIndex = conversationHistory.length - 1;
+        
+        try {
+            const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: query })
+            });
+            const data = await res.json();
+            conversationHistory[botMsgIndex].content = data.response;
+            saveConversation();
+            conversation.innerHTML = "";
+            conversationHistory.forEach(msg => {
+            appendMessageToDOM(msg.type, msg.content);
+            });
+        } catch (error) {
+            const errorMsg = "<p>Error processing your request.</p>";
+            conversationHistory[botMsgIndex].content = errorMsg;
+            saveConversation();
+            conversation.innerHTML = "";
+            conversationHistory.forEach(msg => {
+            appendMessageToDOM(msg.type, msg.content);
+            });
+        }
+        });
+    </script>
+    </body>
+    </html>
