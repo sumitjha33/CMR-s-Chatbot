@@ -21,7 +21,6 @@ try:
     # Load FAISS index
     embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectorstore = FAISS.load_local("cmr_faiss_index", embeddings=embedding_function, allow_dangerous_deserialization=True)
-    logging.info("✅ FAISS index loaded successfully.")
 except Exception as e:
     logging.error(f"❌ Error loading FAISS index: {str(e)}")
 
@@ -190,7 +189,7 @@ def cmr_chatbot(query):
         return "❌ No document index found. Please ensure FAISS is correctly set up."
 
     # Search FAISS index
-    retrieved_docs = vectorstore.similarity_search(query, k=10)
+    retrieved_docs = vectorstore.similarity_search(query, k=5)
     if not retrieved_docs:
         return "❌ No relevant information found in the CMR document."
 
