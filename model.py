@@ -10,9 +10,6 @@ from sentence_transformers import SentenceTransformer
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import numpy as np
 
-# Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyAvXNg4_SsgUTLL30mQzLbM0cbP48RvoFc"
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Load the PDF (Ignoring Images)
 pdf_path = "D:/fitness/main/CMR.pdf"  # Updated to use the uploaded PDF file
